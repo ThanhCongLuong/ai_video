@@ -4,6 +4,9 @@ import os
 import time
 from moviepy.editor import VideoFileClip, concatenate_videoclips,AudioFileClip
 import shutil
+import PIL.Image
+if not hasattr(PIL.Image, 'ANTIALIAS'):
+    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 st.set_page_config(page_title="AI Video Bulk Composer", layout="wide")
 
 # --- CUSTOM CSS ---
