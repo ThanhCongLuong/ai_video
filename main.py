@@ -2,7 +2,7 @@ import streamlit as st
 import random
 import os
 import time
-from moviepy.editor import VideoFileClip, concatenate_videoclips,AudioFileClip
+from moviepy import VideoFileClip, concatenate_videoclips, AudioFileClip
 import shutil
 st.set_page_config(page_title="AI Video Bulk Composer", layout="wide")
 
