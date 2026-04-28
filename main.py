@@ -3,7 +3,7 @@ import random
 import os
 import time
 from moviepy.editor import VideoFileClip, concatenate_videoclips,AudioFileClip
-
+import shutil
 st.set_page_config(page_title="AI Video Bulk Composer", layout="wide")
 
 # --- CUSTOM CSS ---
@@ -26,11 +26,18 @@ button[kind="secondary"] {
 """, unsafe_allow_html=True)
 if 'final_files' not in st.session_state:
     st.session_state.final_files = []
-
+def cleanup_folders():
+    """Xóa và khởi tạo lại các thư mục tạm"""
+    for folder in ["temp", "exports"]:
+        if os.path.exists(folder):
+            shutil.rmtree(folder) # Xóa sạch thư mục và file bên trong
+        os.makedirs(folder)
 # --- HÀM LOGIC GHÉP VIDEO ---
 def process_video_rendering(video_paths, output_name, quality_option="1080p", audio_path=None):
+    clips = []
+    final_clip = None
+    bgm = None
     try:
-        clips = []
         w = 1440 if quality_option == "2K" else 1080
         br = "15000k" if quality_option == "2K" else "8000k"
 
@@ -70,6 +77,12 @@ def process_video_rendering(video_paths, output_name, quality_option="1080p", au
     except Exception as e:
         st.error(f"Lỗi Render {output_name}: {e}")
         return None
+    finally:
+        # Đảm bảo dù lỗi hay không cũng giải phóng RAM
+        if final_clip: final_clip.close()
+        if bgm: bgm.close()
+        for c in clips: c.close()
+    
 # --- KHỞI TẠO STATE ---
 if 'video_slots' not in st.session_state:
     st.session_state.video_slots = ['Cảnh 1', 'Cảnh 2']
@@ -127,7 +140,7 @@ if st.button(f"🚀 XUẤT {num_outputs} VIDEO HÀNG LOẠT", use_container_widt
     else:
         if not os.path.exists("exports"): os.makedirs("exports")
         if not os.path.exists("temp"): os.makedirs("temp")
-        
+        cleanup_folders()
         st.session_state.final_files = [] 
         
         for i in range(num_outputs):
@@ -166,6 +179,7 @@ if st.session_state.final_files:
         st.subheader(f"🎉 Đã xuất thành công {len(st.session_state.final_files)} video")
     with col_clear:
         if st.button("Xóa danh sách 🗑️"):
+            cleanup_folders()
             st.session_state.final_files = []
             st.rerun()
             
